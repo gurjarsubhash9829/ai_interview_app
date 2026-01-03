@@ -1,0 +1,39 @@
+# =========================
+# Flutter / Dart
+# =========================
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+
+# =========================
+# Android / iOS / macOS
+# =========================
+android/.gradle/
+android/local.properties
+ios/Pods/
+ios/.symlinks/
+macos/Pods/
+
+# =========================
+# IDE files
+# =========================
+.idea/
+*.iml
+.vscode/
+
+# =========================
+# Logs & env
+# =========================
+*.log
+.env
+
+# =========================
+# Python virtual env (VERY IMPORTANT)
+# =========================
+venv/
+__pycache__/
+*.pyc
