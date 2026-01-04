@@ -4,6 +4,12 @@ import 'login_screen.dart';
 import 'voice_interview_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+const LinearGradient appBackgroundGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [Color(0xFF030712), Color(0xFF050F2C), Color(0xFF0B3C5D)],
+);
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -66,11 +72,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
         title: const Text(
           'My Interviews',
           style: TextStyle(fontWeight: FontWeight.w700),
@@ -79,29 +87,41 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _jobs.isEmpty
-          ? const _EmptyState()
-          : RefreshIndicator(
-              onRefresh: _loadJobs,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  const _WelcomeHeader(),
-                  const SizedBox(height: 24),
-                  ..._jobs.map(
-                    (job) => _InterviewCard(
-                      title: job['title'],
-                      status: job['interview_status'],
-                      onStart: job['interview_status'] != 'completed'
-                          ? () => _startInterview(job['job_id'])
-                          : null,
-                    ),
+
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: appBackgroundGradient, // ✅ SAME GRADIENT
+        ),
+        child: SafeArea(
+          child: _loading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                )
+              : _jobs.isEmpty
+              ? const _EmptyState()
+              : RefreshIndicator(
+                  color: Colors.white,
+                  backgroundColor: Colors.black,
+                  onRefresh: _loadJobs,
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      const _WelcomeHeader(),
+                      const SizedBox(height: 24),
+                      ..._jobs.map(
+                        (job) => _InterviewCard(
+                          title: job['title'],
+                          status: job['interview_status'],
+                          onStart: job['interview_status'] != 'completed'
+                              ? () => _startInterview(job['job_id'])
+                              : null,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+        ),
+      ),
     );
   }
 }
@@ -112,28 +132,67 @@ class _WelcomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
-          colors: [Color(0xFF4F8CFF), Color(0xFF6FA1FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
         ),
-        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            'Welcome 👋',
-            style: TextStyle(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // ─── LEFT ICON ───
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.work_outline,
               color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+              size: 24,
             ),
           ),
-          SizedBox(height: 6),
-          Text(
-            'Your assigned interviews are ready below',
-            style: TextStyle(color: Colors.white70),
+
+          const SizedBox(width: 16),
+
+          // ─── TEXT ───
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome back',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Your assigned interviews are ready',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -157,119 +216,116 @@ class _InterviewCard extends StatelessWidget {
     final bool completed = status == 'completed';
     final bool inProgress = status == 'in_progress';
 
-    Color accentColor;
-    String statusText;
-    IconData statusIcon;
+    late Color color;
+    late String statusText;
+    late IconData icon;
 
     if (completed) {
-      accentColor = Colors.green;
+      color = Colors.green;
       statusText = 'Completed';
-      statusIcon = Icons.check_circle;
+      icon = Icons.check_circle_rounded;
     } else if (inProgress) {
-      accentColor = Colors.orange;
+      color = Colors.orange;
       statusText = 'In Progress';
-      statusIcon = Icons.play_circle_fill;
+      icon = Icons.play_circle_fill_rounded;
     } else {
-      accentColor = Colors.blue;
+      color = Colors.blue;
       statusText = 'Not Started';
-      statusIcon = Icons.schedule;
+      icon = Icons.schedule_rounded;
     }
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: color.withOpacity(0.04), // very subtle tint
+
+        borderRadius: BorderRadius.circular(22),
+
+        // ✅ LEFT SIDE BORDER ONLY
+        border: Border(
+          left: BorderSide(
+            color: Colors.grey.shade300, // professional neutral grey
+            width: 1.2,
+          ),
+        ),
+
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          // 🔵 LEFT ACCENT
-          Container(
-            width: 6,
-            height: 140,
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(18),
-              ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // TITLE
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
-          ),
 
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 14),
+
+            // STATUS BADGE
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // TITLE
+                  Icon(icon, size: 16, color: color),
+                  const SizedBox(width: 6),
                   Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // STATUS CHIP
-                  Row(
-                    children: [
-                      Icon(statusIcon, size: 18, color: accentColor),
-                      const SizedBox(width: 6),
-                      Text(
-                        statusText,
-                        style: TextStyle(
-                          color: accentColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // CTA BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: completed ? null : onStart,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: completed
-                            ? Colors.grey.shade300
-                            : accentColor,
-                        foregroundColor: completed ? Colors.grey : Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        completed
-                            ? 'Interview Completed'
-                            : inProgress
-                            ? 'Resume Interview'
-                            : 'Start Interview',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    statusText,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 20),
+
+            // CTA BUTTON
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton(
+                onPressed: completed ? null : onStart,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: completed ? Colors.grey.shade200 : color,
+                  foregroundColor: completed ? Colors.grey : Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text(
+                  completed
+                      ? 'Interview Completed'
+                      : inProgress
+                      ? 'Resume Interview'
+                      : 'Start Interview',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -287,17 +343,21 @@ class _EmptyState extends StatelessWidget {
           Icon(
             Icons.assignment_turned_in_outlined,
             size: 72,
-            color: Colors.grey,
+            color: Colors.white70,
           ),
           SizedBox(height: 16),
           Text(
             'No interviews assigned',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
           SizedBox(height: 6),
           Text(
             'You will see them here once assigned',
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: Colors.white70),
           ),
         ],
       ),

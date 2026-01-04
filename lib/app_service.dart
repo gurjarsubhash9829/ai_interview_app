@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -17,16 +18,41 @@ class AppService {
   // =====================================================
   // AUTH
   // =====================================================
+  Future<void> login({
+    required String email,
+    required String password,
+  }) async {
+    debugPrint('🔵 LOGIN REQUEST');
+    debugPrint('   email: $email');
+    debugPrint('   password: ******');
 
-  Future<void> login({required String email, required String password}) async {
-    final res = await client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-    if (res.session == null) {
-      throw Exception('Login failed');
+    try {
+      final res = await client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      debugPrint('🟢 LOGIN RESPONSE');
+
+      if (res.session != null) {
+        debugPrint('   ✅ session created');
+        debugPrint('   userId: ${res.user?.id}');
+        debugPrint('   email: ${res.user?.email}');
+      } else {
+        debugPrint('   ⚠️ session is null');
+      }
+
+      if (res.session == null || res.user == null) {
+        throw Exception('Login failed: session/user null');
+      }
+    } catch (e) {
+      // 🔴 THIS IS WHAT YOU ARE MISSING
+      debugPrint('🔴 LOGIN ERROR');
+      debugPrint('   error: $e');
+      rethrow;
     }
   }
+
 
   Future<void> logout() async {
     await client.auth.signOut();
@@ -54,7 +80,7 @@ class AppService {
     required int questionCount,
     required String interviewTopics,
   }) async {
-    final uri = Uri.parse('http://192.168.130.137:3000/admin/job/create');
+    final uri = Uri.parse('http://10.184.218.137:3000/admin/job/create');
 
     final res = await http.post(
       uri,
@@ -298,7 +324,7 @@ class AppService {
     required String jobId,
   }) async {
     await http.post(
-      Uri.parse('http://192.168.130.137:3000/interview/start'),
+      Uri.parse('http://10.184.218.137:3000/interview/start'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'interview_id': interviewId,
@@ -312,7 +338,7 @@ class AppService {
     required String interviewId,
   }) async {
     final res = await http.post(
-      Uri.parse('http://192.168.130.137:3000/interview/next-question'),
+      Uri.parse('http://10.184.218.137:3000/interview/next-question'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'interview_id': interviewId}),
     );
@@ -325,7 +351,7 @@ class AppService {
     required String answer,
   }) async {
     final res = await http.post(
-      Uri.parse('http://192.168.130.137:3000/interview/advance'),
+      Uri.parse('http://10.184.218.137:3000/interview/advance'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'interview_id': interviewId, 'answer': answer}),
     );
