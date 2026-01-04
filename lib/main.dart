@@ -1,3 +1,4 @@
+import 'package:ai_interview_app/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
@@ -19,9 +20,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'AI Interview',
+      title: 'AI Ninja',
       theme: ThemeData.dark(),
-      home: const LoginScreen(),
+      home: const SplashScreen(),
     );
   }
 }
